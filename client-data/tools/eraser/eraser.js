@@ -81,8 +81,8 @@
 	var svg = Tools.svg;
 
 	Tools.add({ //The new tool
-		"name": "Eraser",
-		"shortcut": "e",
+		"name": "Delete",
+		"shortcut": "d",
 		"listeners": {
 			"press": startErasing,
 			"move": erase,
@@ -90,7 +90,7 @@
 		},
 		"draw": draw,
 		"icon": "tools/eraser/icon.svg",
-		"mouseCursor": "crosshair",
+		"mouseCursor": "not-allowed",
 		"showMarker": true,
 	});
 

@@ -24,10 +24,8 @@ html, body, svg {
 	transition: 1s;
 }
 
-#loadingMessage.hidden {
+.hidden {
 	display: none;
-	opacity: 0;
-	z-index: -1;
 }
 
 #loadingMessage::after {

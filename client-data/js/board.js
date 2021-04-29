@@ -62,12 +62,17 @@ Tools.connect = function () {
 		self.socket = null;
 	}
 
-
+  let query = new URLSearchParams(window.location.search);
 	this.socket = io.connect('', {
+    "auth": { "userId": query.get("user") || "unknown" },
 		"path": window.location.pathname.split("/boards/")[0] + "/socket.io",
 		"reconnection": true,
 		"reconnectionDelay": 100, //Make the xhr connections as fast as possible
 		"timeout": 1000 * 60 * 20 // Timeout after 20 minutes
+	});
+
+	this.socket.on("connect_error", function(e) {
+		console.log(e.message);
 	});
 
 	//Receive draw instructions from the server
@@ -75,6 +80,8 @@ Tools.connect = function () {
 		handleMessage(msg).finally(function afterload() {
 			var loadingEl = document.getElementById("loadingMessage");
 			loadingEl.classList.add("hidden");
+			this.board.classList.remove("hidden");
+			document.getElementById("menu").classList.remove("hidden");
 		});
 	});
 
@@ -92,28 +99,6 @@ Tools.boardName = (function () {
 
 //Get the board as soon as the page is loaded
 Tools.socket.emit("getboard", Tools.boardName);
-
-function saveBoardNametoLocalStorage() {
-	var boardName = Tools.boardName;
-	if (boardName.toLowerCase() === 'anonymous') return;
-	var recentBoards, key = "recent-boards";
-	try {
-		recentBoards = JSON.parse(localStorage.getItem(key));
-		if (!Array.isArray(recentBoards)) throw new Error("Invalid type");
-	} catch(e) {
-		// On localstorage or json error, reset board list
-		recentBoards = [];
-		console.log("Board history loading error", e);
-	}
-	recentBoards = recentBoards.filter(function (name) {
-		return name !== boardName;
-	});
-	recentBoards.unshift(boardName);
-	recentBoards = recentBoards.slice(0, 20);
-	localStorage.setItem(key, JSON.stringify(recentBoards));
-}
-// Refresh recent boards list on each page show
-window.addEventListener("pageshow", saveBoardNametoLocalStorage);
 
 Tools.HTML = {
 	template: new Minitpl("#tools > .tool"),
@@ -261,6 +246,9 @@ Tools.change = function (toolName) {
 			newTool.secondary.active = !newTool.secondary.active;
 			var props = newTool.secondary.active ? newTool.secondary : newTool;
 			Tools.HTML.toggle(newTool.name, props.name, props.icon);
+      if (newTool.secondary.mouseCursor) {
+        Tools.svg.style.cursor = props.mouseCursor || "auto";
+      }
 			if (newTool.secondary.switch) newTool.secondary.switch();
 		}
 		return;
@@ -645,20 +633,7 @@ Tools.setSize = (function size() {
 
 Tools.getSize = (function () { return Tools.setSize() });
 
-Tools.getOpacity = (function opacity() {
-	var chooser = document.getElementById("chooseOpacity");
-	var opacityIndicator = document.getElementById("opacityIndicator");
-
-	function update() {
-		opacityIndicator.setAttribute("opacity", chooser.value);
-	}
-	update();
-
-	chooser.onchange = chooser.oninput = update;
-	return function () {
-		return Math.max(0.1, Math.min(1, chooser.value));
-	};
-})();
+Tools.getOpacity = function() { return 1; };
 
 
 //Scale the canvas on load

@@ -233,11 +233,9 @@ class BoardData {
       data = await fs.promises.readFile(boardData.file);
       boardData.board = JSON.parse(data);
       for (const id in boardData.board) boardData.validate(boardData.board[id]);
-      log("disk load", { board: boardData.name });
     } catch (e) {
       // If the file doesn't exist, this is not an error
       if (e.code === "ENOENT") {
-        log("empty board creation", { board: boardData.name });
       } else {
         log("board load error", {
           board: name,

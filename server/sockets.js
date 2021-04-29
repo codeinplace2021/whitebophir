@@ -28,6 +28,11 @@ function noFail(fn) {
 
 function startIO(app) {
   io = iolib(app);
+  io.use((socket, next) => {
+    let auth = socket.handshake.auth;
+    if (auth.userId) next();
+    else next(new Error("Couldn't verify user"));
+  });
   io.on("connection", noFail(socketConnection));
   return io;
 }
@@ -63,7 +68,7 @@ function socketConnection(socket) {
 
     var board = await getBoard(name);
     board.users.add(socket.id);
-    log("board joined", { board: board.name, users: board.users.size });
+    log("board joined", { board: board.name, user: socket.handshake.auth.userId, users: board.users.size });
     return board;
   }
 
@@ -140,7 +145,6 @@ function socketConnection(socket) {
         var board = await boards[room];
         board.users.delete(socket.id);
         var userCount = board.users.size;
-        log("disconnection", { board: board.name, users: board.users.size });
         if (userCount === 0) {
           board.save();
           delete boards[room];
@@ -154,11 +158,11 @@ function handleMessage(boardName, message, socket) {
   if (message.tool === "Cursor") {
     message.socket = socket.id;
   } else {
-    saveHistory(boardName, message);
+    saveHistory(boardName, message, socket);
   }
 }
 
-async function saveHistory(boardName, message) {
+async function saveHistory(boardName, message, socket) {
   var id = message.id;
   var board = await getBoard(boardName);
   switch (message.type) {

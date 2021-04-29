@@ -122,6 +122,7 @@
 	var handTool = { //The new tool
 		"name": "Hand",
 		"shortcut": "h",
+    "mouseCursor": "hand",
 		"listeners": {
 			"press": press,
 			"move": move,
@@ -130,12 +131,13 @@
 		"secondary": {
 			"name": "Mover",
 			"icon": "tools/hand/mover.svg",
+      "mouseCursor": "move",
 			"active": false,
 			"switch": switchTool,
 		},
 		"draw": draw,
 		"icon": "tools/hand/hand.svg",
-		"mouseCursor": "move",
+		"mouseCursor": "grab",
 		"showMarker": true,
 	};
 	Tools.add(handTool);
